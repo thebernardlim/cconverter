@@ -6,8 +6,8 @@ var beanstalkClient = require('beanstalk_client').Client;
 var fromCurr;
 var toCurr;
 var apiSuccess;
-var successCount = 0;
-var failCount = 0;
+var successCount; // = 0;
+var failedCount; // = 0;
 
 //To change to limit as stated
 var successDelayTime = 5;
@@ -34,6 +34,8 @@ beanstalkClient.connect('127.0.0.1:11300', function(err, conn) {
 				var jsonData = JSON.parse(job_json);
 				fromCurr = jsonData.from;
 				toCurr = jsonData.to;
+				successCount = parseInt(jsonData.successCount);
+				failedCount= parseInt(jsonData.failedCount);
 				
 				var options = {
 				  host: 'currency-api.appspot.com',
@@ -73,7 +75,7 @@ beanstalkClient.connect('127.0.0.1:11300', function(err, conn) {
 									}
 									else
 									{
-										var job_data = {"from": fromCurr, "to" : "SGD"};
+										var job_data = {"from": fromCurr, "to" : toCurr, "successCount" : successCount, "failedCount" : failedCount};
 										
 										conn.put(0, successDelayTime, 1, JSON.stringify(job_data), function(err, job_id) {
 											console.log("new job added");
@@ -85,19 +87,19 @@ beanstalkClient.connect('127.0.0.1:11300', function(err, conn) {
 							}
 							else
 							{
-								failCount++;
-								console.log('****** Fail count: ' + failCount);
+								failedCount++;
+								console.log('****** Fail count: ' + failedCount);
 								
-								//If failCount reaches max tries, bury job. Else destroy current job, and re-put job into queue
-								if (failCount == failMaxTries)
+								//If failedCount reaches max tries, bury job. Else destroy current job, and re-put job into queue
+								if (failedCount == failMaxTries)
 								{
 									conn.bury(job_id, 0, function(err) {});
-									console.log(job_id + ' burried');
+									console.log(job_id + ' buried');
 								}
 								else
 								{
 									conn.destroy(job_id, function(err) {
-										var job_data = {"from": fromCurr, "to" : toCurr};
+										var job_data = {"from": fromCurr, "to" : toCurr, "successCount" : successCount, "failedCount" : failedCount};
 										
 										conn.put(0, successDelayTime, 1, JSON.stringify(job_data), function(err, job_id) {
 											console.log("new job added");
