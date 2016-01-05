@@ -11,7 +11,7 @@ var successCount; // = 0;
 var failedCount; // = 0;
 
 //To change to limit as stated
-var successDelayTime = 5;
+var successDelayTime = 60;
 var failDelayTime = 3;
 
 var successMaxTries = 10;
