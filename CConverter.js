@@ -17,21 +17,7 @@ var failDelayTime = 3;
 var successMaxTries = 10;
 var failMaxTries = 3;
 
-var mongoServerURL = 'mongodb://localhost:27017/test';
-
-/*
-exports.getJsonData = function(jsonData, type)
-{
-	switch(type)
-	{
-		case "from" : return jsonData.from; break;
-		case "to" : return jsonData.to; break;
-		case "successCount" : return parseInt(jsonData.successCount); break;
-		case "failedCount" : return parseInt(jsonData.failedCount); break;
-		default: break;
-	}
-}
-*/
+var mongoServerURL = 'mongodb://localhost:27017/cconverter';
 
 //Parse JSON data
 var getJsonData = function(jsonData, type)
@@ -87,7 +73,6 @@ var exports = module.exports = {
 	getJsonData : getJsonData,
 	getRequest : getRequest
 }
-
 
 //Get initial 1 job from beanstalkd server
 beanstalkClient.connect(beanstalkServerURL, function(err, conn) {
@@ -170,10 +155,7 @@ beanstalkClient.connect(beanstalkServerURL, function(err, conn) {
 							});	
 						}
 					}
-
 				});
-						
-				
 			})
 		}
 		
@@ -186,7 +168,7 @@ var insertDocument = function(db, obj, callback) {
 		"from" : obj.source,
 		"to" : obj.target,
 		"created_at" : new Date(),
-		"rate" : obj.rate
+		"rate" : obj.rate.toFixed(2) 
 	}, function(err, result) {
 		assert.equal(err, null);
 		console.log("Inserted document");
